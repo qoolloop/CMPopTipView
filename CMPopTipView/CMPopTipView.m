@@ -733,6 +733,8 @@
 	[self dismissAnimated:YES];
 	
 	[self notifyDelegatePopTipViewWasDismissedByUser];
+	
+	//TODO: Why self.dismissTarget not removed from containerView?
 }
 
 - (void)popAnimationDidStop:(__unused NSString *)animationID finished:(__unused NSNumber *)finished context:(__unused void *)context
