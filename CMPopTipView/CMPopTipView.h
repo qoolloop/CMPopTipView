@@ -92,6 +92,7 @@ typedef NS_ENUM(NSInteger, PointDirection) {
     PointDirectionAny = 0,
     PointDirectionUp,
     PointDirectionDown,
+	PointDirectionNone,
 };
 
 typedef NS_ENUM(NSInteger, CMPopTipAnimation) {
@@ -145,6 +146,7 @@ typedef NS_ENUM(NSInteger, CMPopTipAnimation) {
 - (id)initWithMessage:(NSString *)messageToShow;
 - (id)initWithCustomView:(UIView *)aView;
 
+- (void)presentInView:(UIView *)containerView animated:(BOOL)animated;
 - (void)presentPointingAtView:(UIView *)targetView inView:(UIView *)containerView animated:(BOOL)animated;
 - (void)presentPointingAtBarButtonItem:(UIBarButtonItem *)barButtonItem animated:(BOOL)animated;
 - (void)dismissAnimated:(BOOL)animated;

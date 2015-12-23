@@ -48,7 +48,7 @@
 
 - (CGRect)bubbleFrame {
 	CGRect bubbleFrame;
-	if (_pointDirection == PointDirectionUp) {
+	if ((_pointDirection == PointDirectionUp) || (_pointDirection == PointDirectionNone)) {
 		bubbleFrame = CGRectMake(_sidePadding, _targetPoint.y+_pointerSize, _bubbleSize.width, _bubbleSize.height);
 	}
 	else {
@@ -107,6 +107,26 @@
 							bubbleRect.origin.x+_cornerRadius, bubbleRect.origin.y,
 							_cornerRadius);
 		CGPathAddLineToPoint(bubblePath, NULL, _targetPoint.x+_sidePadding-_pointerSize, _targetPoint.y+_pointerSize);
+	}
+	else if (_pointDirection == PointDirectionNone) {
+		CGPathMoveToPoint(bubblePath, NULL, bubbleRect.origin.x+_cornerRadius, bubbleRect.origin.y);
+		
+		CGPathAddArcToPoint(bubblePath, NULL,
+							bubbleRect.origin.x+bubbleRect.size.width, bubbleRect.origin.y,
+							bubbleRect.origin.x+bubbleRect.size.width, bubbleRect.origin.y+_cornerRadius,
+							_cornerRadius);
+		CGPathAddArcToPoint(bubblePath, NULL,
+							bubbleRect.origin.x+bubbleRect.size.width, bubbleRect.origin.y+bubbleRect.size.height,
+							bubbleRect.origin.x+bubbleRect.size.width-_cornerRadius, bubbleRect.origin.y+bubbleRect.size.height,
+							_cornerRadius);
+		CGPathAddArcToPoint(bubblePath, NULL,
+							bubbleRect.origin.x, bubbleRect.origin.y+bubbleRect.size.height,
+							bubbleRect.origin.x, bubbleRect.origin.y+bubbleRect.size.height-_cornerRadius,
+							_cornerRadius);
+		CGPathAddArcToPoint(bubblePath, NULL,
+							bubbleRect.origin.x, bubbleRect.origin.y,
+							bubbleRect.origin.x+_cornerRadius, bubbleRect.origin.y,
+							_cornerRadius);
 	}
 	else {
 		CGPathMoveToPoint(bubblePath, NULL, _targetPoint.x+_sidePadding, _targetPoint.y);
@@ -359,118 +379,118 @@
 		self.targetObject = targetView;
 	}
     
-    // If we want to dismiss the bubble when the user taps anywhere, we need to insert
-    // an invisible button over the background.
-    if ( self.dismissTapAnywhere ) {
-        self.dismissTarget = [UIButton buttonWithType:UIButtonTypeCustom];
-        [self.dismissTarget addTarget:self action:@selector(dismissTapAnywhereFired:) forControlEvents:UIControlEventTouchUpInside];
-        [self.dismissTarget setTitle:@"" forState:UIControlStateNormal];
-        self.dismissTarget.frame = containerView.bounds;
-        [containerView addSubview:self.dismissTarget];
-    }
+	// If we want to dismiss the bubble when the user taps anywhere, we need to insert
+	// an invisible button over the background.
+	if ( self.dismissTapAnywhere ) {
+		self.dismissTarget = [UIButton buttonWithType:UIButtonTypeCustom];
+		[self.dismissTarget addTarget:self action:@selector(dismissTapAnywhereFired:) forControlEvents:UIControlEventTouchUpInside];
+		[self.dismissTarget setTitle:@"" forState:UIControlStateNormal];
+		self.dismissTarget.frame = containerView.bounds;
+		[containerView addSubview:self.dismissTarget];
+	}
 	
 	[containerView addSubview:self];
-    
+	
 	// Size of rounded rect
 	CGFloat rectWidth;
-    
-    if (UI_USER_INTERFACE_IDIOM() == UIUserInterfaceIdiomPad) {
-        // iPad
-        if (self.maxWidth) {
-            if (self.maxWidth < containerView.frame.size.width) {
-                rectWidth = self.maxWidth;
-            }
-            else {
-                rectWidth = containerView.frame.size.width - 20;
-            }
-        }
-        else {
-            rectWidth = (int)(containerView.frame.size.width/3);
-        }
-    }
-    else {
-        // iPhone
-        if (self.maxWidth) {
-            if (self.maxWidth < containerView.frame.size.width) {
-                rectWidth = self.maxWidth;
-            }
-            else {
-                rectWidth = containerView.frame.size.width - 10;
-            }
-        }
-        else {
-            rectWidth = (int)(containerView.frame.size.width*2/3);
-        }
-    }
-
+	
+	if (UI_USER_INTERFACE_IDIOM() == UIUserInterfaceIdiomPad) {
+		// iPad
+		if (self.maxWidth) {
+			if (self.maxWidth < containerView.frame.size.width) {
+				rectWidth = self.maxWidth;
+			}
+			else {
+				rectWidth = containerView.frame.size.width - 20;
+			}
+		}
+		else {
+			rectWidth = (int)(containerView.frame.size.width/3);
+		}
+	}
+	else {
+		// iPhone
+		if (self.maxWidth) {
+			if (self.maxWidth < containerView.frame.size.width) {
+				rectWidth = self.maxWidth;
+			}
+			else {
+				rectWidth = containerView.frame.size.width - 10;
+			}
+		}
+		else {
+			rectWidth = (int)(containerView.frame.size.width*2/3);
+		}
+	}
+	
 	CGSize textSize = CGSizeZero;
-    
-    if (self.message!=nil) {
-        if ([self.message respondsToSelector:@selector(boundingRectWithSize:options:attributes:context:)]) {
-            NSMutableParagraphStyle *textParagraphStyle = [[NSMutableParagraphStyle alloc] init];
-            textParagraphStyle.alignment = self.textAlignment;
-            textParagraphStyle.lineBreakMode  =NSLineBreakByWordWrapping;
-
-            textSize = [self.message boundingRectWithSize:CGSizeMake(rectWidth, 99999.0)
-                                                  options:NSStringDrawingUsesLineFragmentOrigin
-                                               attributes:@{
-                                                            NSFontAttributeName: self.textFont,
-                                                            NSParagraphStyleAttributeName: textParagraphStyle
-                                                            }
-                                                  context:nil].size;
-        }
-        else {
-
+	
+	if (self.message!=nil) {
+		if ([self.message respondsToSelector:@selector(boundingRectWithSize:options:attributes:context:)]) {
+			NSMutableParagraphStyle *textParagraphStyle = [[NSMutableParagraphStyle alloc] init];
+			textParagraphStyle.alignment = self.textAlignment;
+			textParagraphStyle.lineBreakMode  =NSLineBreakByWordWrapping;
+			
+			textSize = [self.message boundingRectWithSize:CGSizeMake(rectWidth, 99999.0)
+												  options:NSStringDrawingUsesLineFragmentOrigin
+											   attributes:@{
+															NSFontAttributeName: self.textFont,
+															NSParagraphStyleAttributeName: textParagraphStyle
+															}
+												  context:nil].size;
+		}
+		else {
+			
 #if !TARGET_OS_TV
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wdeprecated-declarations"
-
-            textSize = [self.message sizeWithFont:self.textFont
-                                constrainedToSize:CGSizeMake(rectWidth, 99999.0)
-                                    lineBreakMode:NSLineBreakByWordWrapping];
-
+			
+			textSize = [self.message sizeWithFont:self.textFont
+								constrainedToSize:CGSizeMake(rectWidth, 99999.0)
+									lineBreakMode:NSLineBreakByWordWrapping];
+			
 #pragma clang diagnostic pop
 #endif
-
-        }
-    }
-    if (self.customView != nil) {
-        textSize = self.customView.frame.size;
-    }
-    if (self.title != nil) {
-        CGSize titleSize = CGSizeZero;
-
-        if ([self.title respondsToSelector:@selector(boundingRectWithSize:options:attributes:context:)]) {
-            NSMutableParagraphStyle *titleParagraphStyle = [[NSMutableParagraphStyle alloc] init];
-            titleParagraphStyle.lineBreakMode = NSLineBreakByWordWrapping;
-
-            titleSize = [self.title boundingRectWithSize:CGSizeMake(rectWidth, 99999.0)
-                                                 options:NSStringDrawingUsesLineFragmentOrigin
-                                              attributes:@{
-                                                           NSFontAttributeName: self.titleFont,
-                                                           NSParagraphStyleAttributeName: titleParagraphStyle
-                                                           }
-                                                 context:nil].size;
-        }
-        else {
-
+			
+		}
+	}
+	if (self.customView != nil) {
+		textSize = self.customView.frame.size;
+	}
+	if (self.title != nil) {
+		CGSize titleSize = CGSizeZero;
+		
+		if ([self.title respondsToSelector:@selector(boundingRectWithSize:options:attributes:context:)]) {
+			NSMutableParagraphStyle *titleParagraphStyle = [[NSMutableParagraphStyle alloc] init];
+			titleParagraphStyle.lineBreakMode = NSLineBreakByWordWrapping;
+			
+			titleSize = [self.title boundingRectWithSize:CGSizeMake(rectWidth, 99999.0)
+												 options:NSStringDrawingUsesLineFragmentOrigin
+											  attributes:@{
+														   NSFontAttributeName: self.titleFont,
+														   NSParagraphStyleAttributeName: titleParagraphStyle
+														   }
+												 context:nil].size;
+		}
+		else {
+			
 #if !TARGET_OS_TV
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wdeprecated-declarations"
-
-            titleSize = [self.title sizeWithFont:self.titleFont
-                               constrainedToSize:CGSizeMake(rectWidth, 99999.0)
-                                   lineBreakMode:NSLineBreakByWordWrapping];
-
+			
+			titleSize = [self.title sizeWithFont:self.titleFont
+							   constrainedToSize:CGSizeMake(rectWidth, 99999.0)
+								   lineBreakMode:NSLineBreakByWordWrapping];
+			
 #pragma clang diagnostic pop
 #endif
-
-        }
-
-        if (titleSize.width > textSize.width) textSize.width = titleSize.width;
-        textSize.height += titleSize.height;
-    }
-    
+			
+		}
+		
+		if (titleSize.width > textSize.width) textSize.width = titleSize.width;
+		textSize.height += titleSize.height;
+	}
+	
 	_bubbleSize = CGSizeMake(textSize.width + (_bubblePaddingX*2) + (_cornerRadius*2), textSize.height + (_bubblePaddingY*2) + (_cornerRadius*2));
 	
 	UIView *superview = containerView.superview;
@@ -479,46 +499,55 @@
 	
 	CGPoint targetRelativeOrigin    = [targetView.superview convertPoint:targetView.frame.origin toView:superview];
 	CGPoint containerRelativeOrigin = [superview convertPoint:containerView.frame.origin toView:superview];
-    
+	
 	CGFloat pointerY;	// Y coordinate of pointer target (within containerView)
 	
-    
-    if (targetRelativeOrigin.y+targetView.bounds.size.height < containerRelativeOrigin.y) {
-        pointerY = 0.0;
-        _pointDirection = PointDirectionUp;
-    }
-    else if (targetRelativeOrigin.y > containerRelativeOrigin.y+containerView.bounds.size.height) {
-        pointerY = containerView.bounds.size.height;
-        _pointDirection = PointDirectionDown;
-    }
-    else {
-        _pointDirection = _preferredPointDirection;
-        CGPoint targetOriginInContainer = [targetView convertPoint:CGPointMake(0.0, 0.0) toView:containerView];
-        CGFloat sizeBelow = containerView.bounds.size.height - targetOriginInContainer.y;
-        if (_pointDirection == PointDirectionAny) {
-            if (sizeBelow > targetOriginInContainer.y) {
-                pointerY = targetOriginInContainer.y + targetView.bounds.size.height;
-                _pointDirection = PointDirectionUp;
-            }
-            else {
-                pointerY = targetOriginInContainer.y;
-                _pointDirection = PointDirectionDown;
-            }
-        }
-        else {
-            if (_pointDirection == PointDirectionDown) {
-                pointerY = targetOriginInContainer.y;
-            }
-            else {
-                pointerY = targetOriginInContainer.y + targetView.bounds.size.height;
-            }
-        }
-    }
-    
+	if (targetView == nil) {
+		pointerY = containerView.bounds.size.height / 2 - _bubbleSize.height / 2; //TODO: should be a better way to express this
+		_pointDirection = PointDirectionNone;
+	}
+	else if (targetRelativeOrigin.y+targetView.bounds.size.height < containerRelativeOrigin.y) {
+		pointerY = 0.0;
+		_pointDirection = PointDirectionUp;
+	}
+	else if (targetRelativeOrigin.y > containerRelativeOrigin.y+containerView.bounds.size.height) {
+		pointerY = containerView.bounds.size.height;
+		_pointDirection = PointDirectionDown;
+	}
+	else {
+		_pointDirection = _preferredPointDirection;
+		CGPoint targetOriginInContainer = [targetView convertPoint:CGPointMake(0.0, 0.0) toView:containerView];
+		CGFloat sizeBelow = containerView.bounds.size.height - targetOriginInContainer.y;
+		if (_pointDirection == PointDirectionAny) {
+			if (sizeBelow > targetOriginInContainer.y) {
+				pointerY = targetOriginInContainer.y + targetView.bounds.size.height;
+				_pointDirection = PointDirectionUp;
+			}
+			else {
+				pointerY = targetOriginInContainer.y;
+				_pointDirection = PointDirectionDown;
+			}
+		}
+		else {
+			if (_pointDirection == PointDirectionDown) {
+				pointerY = targetOriginInContainer.y;
+			}
+			else {
+				pointerY = targetOriginInContainer.y + targetView.bounds.size.height;
+			}
+		}
+	}
+	
 	CGFloat W = containerView.bounds.size.width;
 	
-	CGPoint p = [targetView.superview convertPoint:targetView.center toView:containerView];
-	CGFloat x_p = p.x;
+	CGFloat x_p;
+	if (_pointDirection == PointDirectionNone) {
+		x_p = W / 2;
+	}
+	else {
+		CGPoint p = [targetView.superview convertPoint:targetView.center toView:containerView];
+		x_p = p.x;
+	}
 	CGFloat x_b = x_p - roundf(_bubbleSize.width/2);
 	if (x_b < _sidePadding) {
 		x_b = _sidePadding;
@@ -535,7 +564,7 @@
 	
 	CGFloat fullHeight = _bubbleSize.height + _pointerSize + 10.0;
 	CGFloat y_b;
-	if (_pointDirection == PointDirectionUp) {
+	if ((_pointDirection == PointDirectionUp) || (_pointDirection == PointDirectionNone)) {
 		y_b = _topMargin + pointerY;
 		_targetPoint = CGPointMake(x_p-x_b, 0);
 	}
@@ -548,32 +577,32 @@
 								   y_b,
 								   _bubbleSize.width+_sidePadding*2,
 								   fullHeight);
-    finalFrame = CGRectIntegral(finalFrame);
-    
-   	
+	finalFrame = CGRectIntegral(finalFrame);
+	
+	
 	if (animated) {
-        if (self.animation == CMPopTipAnimationSlide) {
-            self.alpha = 0.0;
-            CGRect startFrame = finalFrame;
-            startFrame.origin.y += 10;
-            self.frame = startFrame;
-        }
+		if (self.animation == CMPopTipAnimationSlide) {
+			self.alpha = 0.0;
+			CGRect startFrame = finalFrame;
+			startFrame.origin.y += 10;
+			self.frame = startFrame;
+		}
 		else if (self.animation == CMPopTipAnimationPop) {
-            self.frame = finalFrame;
-            self.alpha = 0.5;
-            
-            // start a little smaller
-            self.transform = CGAffineTransformMakeScale(0.75f, 0.75f);
-            
-            // animate to a bigger size
-            [UIView beginAnimations:nil context:nil];
-            [UIView setAnimationDelegate:self];
-            [UIView setAnimationDidStopSelector:@selector(popAnimationDidStop:finished:context:)];
-            [UIView setAnimationDuration:0.15f];
-            self.transform = CGAffineTransformMakeScale(1.1f, 1.1f);
-            self.alpha = 1.0;
-            [UIView commitAnimations];
-        }
+			self.frame = finalFrame;
+			self.alpha = 0.5;
+			
+			// start a little smaller
+			self.transform = CGAffineTransformMakeScale(0.75f, 0.75f);
+			
+			// animate to a bigger size
+			[UIView beginAnimations:nil context:nil];
+			[UIView setAnimationDelegate:self];
+			[UIView setAnimationDidStopSelector:@selector(popAnimationDidStop:finished:context:)];
+			[UIView setAnimationDuration:0.15f];
+			self.transform = CGAffineTransformMakeScale(1.1f, 1.1f);
+			self.alpha = 1.0;
+			[UIView commitAnimations];
+		}
 		
 		[self setNeedsDisplay];
 		
@@ -589,6 +618,11 @@
 		[self setNeedsDisplay];
 		self.frame = finalFrame;
 	}
+}
+
+- (void)presentInView:(UIView *)containerView animated:(BOOL)animated
+{
+	[self presentPointingAtView:nil inView:containerView animated:animated];
 }
 
 - (void)presentPointingAtBarButtonItem:(UIBarButtonItem *)barButtonItem animated:(BOOL)animated {
@@ -616,7 +650,7 @@
     }
 	
 	[self removeFromSuperview];
-    
+	
 	_highlight = NO;
 	self.targetObject = nil;
 }
